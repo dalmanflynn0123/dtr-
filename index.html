@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DTR Printing System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0c1428;--navy2:#162040;--navy3:#1e2d55;
+  --blue:#2563eb;--blue2:#1d4ed8;--blue3:#3b82f6;--blue-lt:#eff6ff;--blue-md:#dbeafe;
+  --green:#16a34a;--green-lt:#f0fdf4;--green-bd:#bbf7d0;
+  --red:#dc2626;--amber:#d97706;
+  --slate:#475569;--slate2:#64748b;--slate3:#94a3b8;--slate4:#cbd5e1;
+  --bg:#f1f5fb;--surface:#fff;--surface2:#f8faff;
+  --border:#e2e8f0;--border2:#cbd5e1;
+  --text:#0f172a;--text2:#475569;--text3:#94a3b8;
+  --grad:linear-gradient(135deg,#1e40af,#2563eb 60%,#3b82f6);
+  --grad-dark:linear-gradient(160deg,#0c1428 0%,#162040 100%);
+  --shadow-sm:0 1px 3px rgba(15,23,42,.08);
+  --shadow:0 4px 16px rgba(15,23,42,.1);
+  --shadow-lg:0 12px 40px rgba(15,23,42,.16);
+  --r:8px;--r2:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+.shell{display:flex;height:100vh;overflow:visible}
+
+/* SIDEBAR */
+.sidebar{width:235px;flex-shrink:0;background:var(--grad-dark);display:flex;flex-direction:column;position:relative;overflow:hidden}
+.sb-deco1{position:absolute;top:-50px;right:-50px;width:180px;height:180px;border-radius:50%;background:rgba(59,130,246,.08);pointer-events:none}
+.sb-deco2{position:absolute;bottom:-30px;left:-30px;width:130px;height:130px;border-radius:50%;background:rgba(59,130,246,.06);pointer-events:none}
+.sb-head{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:11px}
+.sb-icon{width:38px;height:38px;border-radius:10px;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.sb-title{font-size:14px;font-weight:700;color:#fff}
+.sb-sub{font-size:9px;color:rgba(255,255,255,.35);font-family:'DM Mono',monospace;margin-top:2px}
+.sb-nav{padding:10px 8px;flex:1;overflow-y:auto}
+.sb-section{font-size:9px;font-weight:700;color:rgba(255,255,255,.28);letter-spacing:.12em;text-transform:uppercase;padding:10px 8px 4px}
+.nav-btn{display:flex;align-items:center;gap:9px;width:100%;padding:9px 10px;border-radius:var(--r);border:none;background:none;cursor:pointer;color:rgba(255,255,255,.52);font-size:12.5px;font-weight:500;font-family:'DM Sans',sans-serif;text-align:left;transition:all .15s;position:relative}
+.nav-btn:hover{background:rgba(255,255,255,.08);color:#fff}
+.nav-btn.active{background:rgba(37,99,235,.38);color:#fff}
+.nav-btn.active::before{content:'';position:absolute;left:0;top:22%;width:3px;height:56%;background:var(--blue3);border-radius:0 3px 3px 0}
+.nav-btn svg{opacity:.6;flex-shrink:0}.nav-btn.active svg,.nav-btn:hover svg{opacity:1}
+.nb-pill{margin-left:auto;background:rgba(255,255,255,.14);color:rgba(255,255,255,.8);font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;font-family:'DM Mono',monospace}
+.sb-stats{padding:8px 14px 12px;border-top:1px solid rgba(255,255,255,.07)}
+.sb-stat{display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:10.5px;color:rgba(255,255,255,.38)}
+.sb-stat-v{font-family:'DM Mono',monospace;font-size:10.5px;color:rgba(255,255,255,.72);font-weight:500}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:54px;background:var(--surface);border-bottom:1px solid var(--border);padding:0 22px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:var(--shadow-sm)}
+.tb-left h1{font-size:15px;font-weight:700}
+.tb-left p{font-size:11px;color:var(--text3);margin-top:1px}
+.tb-right{display:flex;align-items:center;gap:8px}
+.content{flex:1;overflow-y:auto;padding:20px 22px;background:var(--bg)}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:16px;box-shadow:var(--shadow-sm);margin-bottom:14px}
+.card-title{font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:12px;color:var(--navy2)}
+.card-title .icon{font-size:15px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap;line-height:1}
+.btn:hover{background:var(--surface2);border-color:var(--slate3)}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--grad);color:#fff;border:none;box-shadow:0 2px 8px rgba(37,99,235,.28)}
+.btn-primary:hover{opacity:.9}
+.btn-danger{background:#fef2f2;color:var(--red);border-color:#fecaca}
+.btn-danger:hover{background:#fee2e2}
+.btn-success{background:var(--green-lt);color:var(--green);border-color:var(--green-bd)}
+.btn-email{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;border:none;box-shadow:0 2px 8px rgba(109,40,217,.28)}
+.btn-email:hover{opacity:.9}
+.btn-ghost{background:none;border-color:transparent;color:var(--blue)}
+.btn-ghost:hover{background:var(--blue-lt)}
+.btn-sm{padding:6px 11px;font-size:12px}
+.btn-xs{padding:4px 9px;font-size:11px}
+.btn:disabled{opacity:.5;cursor:not-allowed;pointer-events:none}
+
+/* FORMS */
+.form-label{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px}
+input[type=text],input[type=date],input[type=email],select,textarea{width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--text);transition:border-color .12s,box-shadow .12s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.form-group{margin-bottom:12px}
+.form-group:last-child{margin-bottom:0}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;line-height:1.4}
+.badge-blue{background:var(--blue-lt);color:var(--blue2);border:1px solid var(--blue-md)}
+.badge-green{background:var(--green-lt);color:var(--green);border:1px solid var(--green-bd)}
+.badge-slate{background:#f8fafc;color:var(--slate);border:1px solid var(--border2)}
+.badge-red{background:#fef2f2;color:var(--red);border:1px solid #fecaca}
+.badge-amber{background:#fffbeb;color:var(--amber);border:1px solid #fde68a}
+.badge-purple{background:#f5f3ff;color:#6d28d9;border:1px solid #ddd6fe}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:13px 15px;border-left:4px solid var(--blue3)}
+.stat-val{font-size:22px;font-weight:700;font-family:'DM Mono',monospace;color:var(--navy2)}
+.stat-lbl{font-size:11px;color:var(--text3);margin-top:3px;font-weight:500}
+
+/* TABLE */
+.table-wrap{border:1px solid var(--blue-md);border-radius:var(--r2);overflow:hidden;overflow-x:auto}
+.data-table{width:100%;border-collapse:collapse;font-size:12px}
+.data-table th{background:var(--grad);color:#fff;padding:9px 11px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+.data-table td{padding:7px 11px;border-bottom:1px solid #eef2ff;color:var(--text);white-space:nowrap}
+.data-table tr:nth-child(even) td{background:#fafbff}
+.data-table tr:hover td{background:var(--blue-lt);transition:background .1s}
+.data-table tr:last-child td{border-bottom:none}
+.mono{font-family:'DM Mono',monospace;font-size:11px}
+.time-in{color:var(--green);font-weight:600}
+.time-out{color:var(--red);font-weight:600}
+.dim{color:var(--text3)}
+
+/* GRID */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;align-items:start}
+
+/* PAGE */
+.page{display:none}.page.active{display:block}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-bg.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border-radius:var(--r2);padding:22px;width:520px;max-width:95vw;box-shadow:var(--shadow-lg);transform:translateY(12px);transition:transform .2s}
+.modal-bg.open .modal{transform:translateY(0)}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:9px}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid var(--border)}
+
+/* BULK */
+.scroll-box{max-height:230px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r)}
+.bulk-item{display:flex;align-items:center;gap:9px;padding:7px 11px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s}
+.bulk-item:last-child{border-bottom:none}
+.bulk-item:hover{background:var(--blue-lt)}
+.bulk-item input{accent-color:var(--blue);width:14px;height:14px;cursor:pointer}
+.emp-avatar{width:30px;height:30px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:var(--r);font-size:13px;font-weight:500;opacity:0;transform:translateY(8px);pointer-events:none;transition:all .25s;z-index:9999;box-shadow:var(--shadow-lg);border-left:3px solid var(--blue3);max-width:360px}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.toast-success{border-left-color:#22c55e}
+.toast.toast-error{border-left-color:#ef4444}
+
+/* DROP ZONE */
+.drop-zone{border:2px dashed var(--border2);border-radius:var(--r2);padding:24px 18px;text-align:center;cursor:pointer;transition:all .15s;background:var(--surface2)}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--blue);background:var(--blue-lt)}
+.drop-zone .dz-icon{font-size:30px;margin-bottom:7px}
+.drop-zone .dz-title{font-size:13px;font-weight:600;color:var(--text2)}
+.drop-zone .dz-sub{font-size:12px;color:var(--text3);margin-top:3px}
+input[type=file].hidden{display:none}
+
+/* PREVIEW */
+.preview-shell{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;box-shadow:var(--shadow)}
+.preview-bar{background:var(--navy2);padding:10px 14px;display:flex;align-items:center;gap:6px}
+.preview-bar span{font-size:12px;color:rgba(255,255,255,.4);margin-left:8px}
+.pd{width:10px;height:10px;border-radius:50%}
+.preview-body{background:#e5e7eb;min-height:380px;display:flex;justify-content:center;padding:18px;overflow-y:auto;max-height:68vh}
+.preview-empty{text-align:center;padding:60px 20px;color:var(--text3);width:100%;display:flex;flex-direction:column;align-items:center;gap:12px}
+
+/* UPLOAD RESULT */
+.upload-result{margin-top:10px;padding:9px 13px;border-radius:var(--r);font-size:13px;font-weight:500}
+.upload-ok{background:var(--green-lt);color:var(--green);border:1px solid var(--green-bd)}
+.upload-err{background:#fef2f2;color:var(--red);border:1px solid #fecaca}
+
+/* SPINNER */
+.spinner{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* COMPANY LOGO in DTR */
+.dtr-header-row{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.dtr-logo{
+  height:100px;    
+  max-width:260px;  
+  object-fit:contain;
+  flex-shrink:0;
+}
+.dtr-header-center{flex:1;text-align:center}
+/* DTR PRINT DOC */
+.dtr-doc{font-family:'Calibri','Arial',sans-serif;font-size:13px;color:#000;background:#fff;width:100%;max-width:920px;margin:0 auto;padding:20px 24px}
+.dtr-co-name{font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#1e3a8a;text-align:center}
+.dtr-co-addr{font-size:12px;color:#555;text-align:center;margin-top:2px}
+.dtr-dept{text-align:center;font-size:15px;font-weight:700;margin:4px 0 2px;color:#1e40af;text-transform:uppercase;letter-spacing:.06em}
+.dtr-period{text-align:center;font-size:10px;margin-bottom:10px;color:#444}
+.dtr-period strong{color:#1d4ed8}
+.dtr-emp-bar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:10px;padding:7px 10px;background:linear-gradient(90deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe;border-radius:5px;font-size:9.5px}
+.dtr-emp-bar span{color:#555}.dtr-emp-bar strong{color:#1e3a8a}
+.dtr-table-wrap{border:1.5px solid #93c5fd;border-radius:5px;overflow:hidden;margin-bottom:14px}
+.dtr-table{width:100%;border-collapse:collapse;font-size:9.5px}
+.dtr-table thead th{background:linear-gradient(180deg,#1e40af,#2563eb);color:#fff;padding:6px 8px;font-weight:700;text-transform:uppercase;font-size:8.5px;letter-spacing:.04em;border-right:1px solid rgba(255,255,255,.2);text-align:center}
+.dtr-table thead th.left{text-align:left}
+.dtr-table thead th:last-child{border-right:none}
+.dtr-table tbody td{padding:4px 7px;border-bottom:1px solid #dbeafe;border-right:1px solid #e0eaff;text-align:center;color:#1e293b}
+.dtr-table tbody td.left{text-align:left}
+.dtr-table tbody tr:last-child td{border-bottom:none}
+.dtr-table tfoot td{background:linear-gradient(90deg,#1e3a8a,#1d4ed8);color:#fff;font-weight:700;padding:5px 8px;text-align:center;font-size:8.5px;text-transform:uppercase;letter-spacing:.03em}
+.dtr-sigs{display:flex;justify-content:space-between;margin-top:22px;flex-wrap:wrap;gap:14px}
+.dtr-sig{text-align:center;min-width:155px}
+.dtr-sig-line{border-top:1.5px solid #1e40af;margin-bottom:4px;padding-top:4px}
+.dtr-sig-label{font-size:8.5px;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:.06em}
+.dtr-sig-sub{font-size:8px;color:#888;margin-top:1px}
+.dtr-footnote{text-align:center;font-size:7.5px;color:#888;margin-top:10px;border-top:1px solid #e0eaff;padding-top:5px;font-style:italic}
+
+/* PRINT */
+@media print{
+  body *{visibility:hidden!important}
+  #print-area,#print-area *{visibility:visible!important}
+  #print-area{position:absolute!important;left:0!important;top:0!important;width:100%!important;background:#fff!important}
+  .dtr-page{page-break-after:always;break-after:page}
+  .dtr-page:last-child{page-break-after:auto;break-after:auto}
+  @page{margin:10mm}
+}
+#print-area{display:block;position:absolute;left:-9999px;top:0;width:100%}
+
+/* COMPANY CARDS */
+.co-card{border:2px solid var(--border);border-radius:var(--r2);padding:14px;cursor:pointer;transition:all .15s;background:var(--surface)}
+.co-card:hover{border-color:var(--blue3);background:var(--blue-lt)}
+.co-card.selected{border-color:var(--blue);background:var(--blue-lt);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.co-card img{height:40px;object-fit:contain;margin-bottom:6px}
+.co-card-name{font-size:11px;font-weight:700;color:var(--navy2);line-height:1.4}
+#page-companies { overflow: visible; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-deco1"></div><div class="sb-deco2"></div>
+  <div class="sb-head">
+    <div class="sb-icon">🕐</div>
+    <div><div class="sb-title">DTR System</div><div class="sb-sub">MIBSSI</div></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section">Main</div>
+    <button class="nav-btn active" onclick="goTo('records')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      Attendance Records <span class="nb-pill" id="nb-rec">0</span>
+    </button>
+    <button class="nav-btn" onclick="goTo('employees')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Employees <span class="nb-pill" id="nb-emp">0</span>
+    </button>
+    <button class="nav-btn" onclick="goTo('upload')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Upload Data
+    </button>
+    <div class="sb-section">Print & Send</div>
+    <button class="nav-btn" onclick="goTo('settings')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Print Settings
+    </button>
+    <button class="nav-btn" onclick="goTo('print')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print / Export PDF
+    </button>
+    <button class="nav-btn" onclick="goTo('email')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      Send via Email
+    </button>
+    <button class="nav-btn" onclick="goTo('companies')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Companies
+    </button>
+  </nav>
+  <div class="sb-stats">
+    <div class="sb-stat">Employees <span class="sb-stat-v" id="sb-emps">—</span></div>
+    <div class="sb-stat">Records <span class="sb-stat-v" id="sb-days">—</span></div>
+    <div class="sb-stat">Period <span class="sb-stat-v" id="sb-period">—</span></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-left">
+      <h1 id="page-title">Attendance Records</h1>
+      <p id="page-sub">Browse all DTR records from the database</p>
+    </div>
+    <div class="tb-right">
+      <span class="badge badge-blue" id="top-badge" style="display:none">
+        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        <span id="top-badge-txt"></span>
+      </span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- PAGE: RECORDS -->
+    <div class="page active" id="page-records">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-val" id="st-emps">0</div><div class="stat-lbl">Employees</div></div>
+        <div class="stat-card" style="border-left-color:#16a34a"><div class="stat-val" id="st-days">0</div><div class="stat-lbl">Day Records</div></div>
+        <div class="stat-card" style="border-left-color:#d97706"><div class="stat-val" id="st-timein">0</div><div class="stat-lbl">With Time In</div></div>
+        <div class="stat-card" style="border-left-color:#dc2626"><div class="stat-val" id="st-missing">0</div><div class="stat-lbl">Missing Punch</div></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+          <div style="flex:1.5;min-width:150px">
+            <label class="form-label">Company Filter</label>
+            <select id="rec-filter-co" onchange="onCompanyFilterChange()">
+              <option value="">All Companies</option>
+            </select>
+          </div>
+          <div style="flex:2;min-width:150px">
+            <label class="form-label">Employee</label>
+            <select id="rec-filter-emp" onchange="renderTable()">
+              <option value="">All employees</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:120px">
+            <label class="form-label">From</label>
+            <input type="date" id="rec-from" onchange="renderTable()">
+          </div>
+          <div style="flex:1;min-width:120px">
+            <label class="form-label">To</label>
+            <input type="date" id="rec-to" onchange="renderTable()">
+          </div>
+          <button class="btn btn-sm btn-ghost" onclick="clearRecFilters()">Clear</button>
+          <button class="btn btn-sm btn-primary" onclick="loadRecords()">
+            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>Refresh
+          </button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th>Employee ID</th><th>Name</th><th>Company</th><th>Department</th>
+            <th>Date</th><th>Day</th><th>Time In</th><th>Time Out</th><th>Total Hours</th>
+          </tr></thead>
+          <tbody id="rec-tbody"><tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text3)">Loading...</td></tr></tbody>
+        </table>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+        <span id="rec-lbl" style="font-size:12px;color:var(--text3)"></span>
+        <button class="btn btn-primary btn-sm" onclick="goTo('print')">Go to Print →</button>
+      </div>
+    </div>
+
+    <!-- PAGE: EMPLOYEES -->
+    <div class="page" id="page-employees">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <label class="form-label" style="margin:0">Filter:</label>
+    <select id="emp-filter-co" onchange="renderEmpTable()" style="width:180px">
+      <option value="">All Companies</option>
+    </select>
+    <select id="emp-filter-dept" onchange="renderEmpTable()" style="width:160px">
+      <option value="">All Departments</option>
+    </select>
+    <select id="emp-filter-pos" onchange="renderEmpTable()" style="width:160px">
+      <option value="">All Positions</option>
+    </select>
+    <button class="btn btn-xs btn-ghost" onclick="clearEmpFilters()">Clear</button>
+  </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-sm" onclick="openModal('modal-import')">⬆ Import USERINFO.csv</button>
+          <button class="btn btn-sm btn-success" onclick="exportUserinfo()">⬇ Export CSV</button>
+          <button class="btn btn-primary btn-sm" onclick="openAddEmployee()">+ Add Employee</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th>Device ID</th><th>Employee ID</th><th>Full Name</th>
+            <th>Company</th><th>Department</th><th>Position</th><th>Email</th>
+            <th style="text-align:center">Actions</th>
+          </tr></thead>
+          <tbody id="emp-tbody"><tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text3)">Loading...</td></tr></tbody>
+        </table>
+      </div>
+      <div style="margin-top:8px;font-size:12px;color:var(--text3)" id="emp-lbl"></div>
+    </div>
+
+    <!-- PAGE: UPLOAD -->
+    <div class="page" id="page-upload">
+      <div class="grid2">
+        <div>
+          <div class="card">
+            <div class="card-title"><span class="icon">📋</span> Upload attlog.dat</div>
+            <p style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.6">Upload your biometric export. New records are added; existing ones updated. Double punches are ignored automatically.</p>
+            <div class="drop-zone" id="dz-dat" onclick="document.getElementById('fi-dat').click()" ondragover="dzDrag(event,'dz-dat')" ondragleave="dzLeave('dz-dat')" ondrop="dzDrop(event,'dz-dat','fi-dat')">
+              <div class="dz-icon">📂</div>
+              <div class="dz-title">Click or drag attlog.dat here</div>
+              <div class="dz-sub" id="dz-dat-name">Supports .dat files</div>
+            </div>
+            <input type="file" id="fi-dat" class="hidden" accept=".dat,.txt" onchange="previewFile('fi-dat','dz-dat-name')">
+            <button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="uploadAttlog()" id="btn-upload-dat">Upload & Process</button>
+            <div id="res-dat"></div>
+          </div>
+          <div class="card">
+    <div class="card-title"><span class="icon">🔄</span> Sync from Device</div>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.6">Pull attendance logs directly from the ZKTeco device over the network. Automatically</p>
+    <button class="btn btn-primary" style="width:100%" onclick="syncDevice()" id="btn-sync-device">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+        Sync
+    </button>
+    <div id="res-sync" style="margin-top:10px"></div>
+</div>
+          <div class="card">
+            <div class="card-title"><span class="icon">⚠️</span> Danger Zone</div>
+            <p style="font-size:12px;color:var(--text3);margin-bottom:10px">Permanently delete all attendance records.</p>
+            <button class="btn btn-danger btn-sm" onclick="clearAllAttendance()">🗑 Clear All Attendance Records</button>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-title"><span class="icon">👥</span> Import USERINFO.csv</div>
+            <p style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.6">Col 2 = DeviceID · Col 3 = EmployeeID · Col 4 = Name · Col 6 = Position Check the USERINFO before importing</p>
+            <div class="drop-zone" id="dz-csv" onclick="document.getElementById('fi-csv').click()" ondragover="dzDrag(event,'dz-csv')" ondragleave="dzLeave('dz-csv')" ondrop="dzDrop(event,'dz-csv','fi-csv')">
+              <div class="dz-icon">📊</div>
+              <div class="dz-title">Click or drag USERINFO.csv here</div>
+              <div class="dz-sub" id="dz-csv-name">Supports .csv files</div>
+            </div>
+            <input type="file" id="fi-csv" class="hidden" accept=".csv,.txt" onchange="previewFile('fi-csv','dz-csv-name')">
+            <button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="uploadUserinfo()">Import Employees</button>
+            <div id="res-csv"></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="icon">ℹ️</span> attlog.dat Format</div>
+            <div style="background:var(--navy2);border-radius:var(--r);padding:11px 13px;font-family:'DM Mono',monospace;font-size:11px;color:#7dd3fc;line-height:2">
+              <span style="color:#6b7280"># DeviceID            Date       Time      ign          Punch</span><br>
+              12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2026-05-28&nbsp; 19:35:47&nbsp; 1&nbsp; <span style="color:#86efac">0</span> <span style="color:#6b7280">← IN</span><br>
+              12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2026-05-29&nbsp; 17:00:12&nbsp; 1&nbsp; <span style="color:#fca5a5">1</span> <span style="color:#6b7280">← OUT</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: SETTINGS -->
+    <div class="page" id="page-settings">
+  <div class="grid2">
+        <div>
+          <div class="card">
+            <div class="card-title"><span class="icon">🏢</span> Default Document Header</div>
+            <p style="font-size:12px;color:var(--text3);margin-bottom:12px">Used when no company is assigned to the employee.</p>
+            <div class="form-group"><label class="form-label">Company Name</label><input type="text" id="co-name"></div>
+            <div class="form-group"><label class="form-label">Address</label><input type="text" id="co-addr"></div>
+            <div class="form-group"><label class="form-label">Department / Branch</label><input type="text" id="co-dept"></div>
+            <div class="form-group"><label class="form-label">Approved By</label><input type="text" id="co-approver" placeholder="Full Name — Position"></div>
+            <button class="btn btn-primary btn-sm" onclick="saveSettings()">💾 Save Settings</button>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-title"><span class="icon">📅</span> Attendance Period</div>
+            <div class="form-row">
+              <div><label class="form-label">From</label><input type="date" id="df" onchange="refreshSettingsPreview()"></div>
+              <div><label class="form-label">To</label><input type="date" id="dt" onchange="refreshSettingsPreview()"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="icon">🎨</span> Layout Options</div>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <label style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer;font-weight:500"><input type="checkbox" id="opt-zebra" checked onchange="refreshSettingsPreview()"> Alternating row shading</label>
+              <label style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer;font-weight:500"><input type="checkbox" id="opt-total" checked onchange="refreshSettingsPreview()"> Show totals row</label>
+              <label style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer;font-weight:500"><input type="checkbox" id="opt-bionote" checked onchange="refreshSettingsPreview()"> Biometric footer note</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:4px">
+        <div class="card-title"><span class="icon">👁</span> Live DTR Preview
+          <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:6px">— reflects settings above in real time</span>
+          <span class="badge badge-slate" id="settings-prev-lbl" style="margin-left:auto;font-size:10px"></span>
+        </div>
+        <div class="preview-shell">
+          <div class="preview-bar">
+            <div class="pd" style="background:#ef4444"></div>
+            <div class="pd" style="background:#f59e0b;margin-left:4px"></div>
+            <div class="pd" style="background:#22c55e;margin-left:4px"></div>
+            <span>Print Preview</span>
+          </div>
+          <div class="preview-body" id="settings-prev-body">
+            <div class="preview-empty"><div style="font-size:36px">📋</div><div style="font-size:13px;font-weight:600">Select an employee in the Print tab first</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PAGE: PREVIEW -->
+    <div class="page" id="page-preview">
+      <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        <div style="flex:1;min-width:180px">
+          <label class="form-label">Company</label>
+          <select id="prev-filter-co" onchange="onPreviewCoChange()" style="margin-top:4px"></select>
+        </div>
+        <div style="flex:2;min-width:200px">
+          <label class="form-label">Employee</label>
+          <select id="prev-sel" onchange="renderPreview()" style="margin-top:4px"></select>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-sm" onclick="prevEmp()">← Prev</button>
+          <button class="btn btn-sm" onclick="nextEmp()">Next →</button>
+          <button class="btn btn-primary btn-sm" onclick="goTo('print')">Go to Print →</button>
+        </div>
+      </div>
+      <div class="preview-shell">
+        <div class="preview-bar">
+          <div class="pd" style="background:#ef4444"></div>
+          <div class="pd" style="background:#f59e0b;margin-left:4px"></div>
+          <div class="pd" style="background:#22c55e;margin-left:4px"></div>
+          <span>Print Preview</span>
+          <span class="badge badge-slate" id="prev-info" style="margin-left:auto;font-size:10px"></span>
+        </div>
+        <div class="preview-body" id="prev-body">
+          <div class="preview-empty"><div style="font-size:48px">📋</div><div style="font-size:14px;font-weight:600">Select an employee above</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: PRINT -->
+    <div class="page" id="page-print">
+      <div class="grid2" style="margin-bottom:14px">
+        <div class="card">
+          <div class="card-title"><span class="icon">👤</span> Single Employee</div>
+          <div class="form-group">
+            <label class="form-label">Company Filter</label>
+            <select id="print-filter-co" onchange="onPrintCoChange()"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Select Employee</label>
+            <select id="single-sel" onchange="lastPrintSel=this.value;refreshSettingsPreview()"></select>
+          </div>
+          <button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="openPDFWindow([document.getElementById('single-sel').value])">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Print / Save PDF
+          </button>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="icon">👥</span> Bulk Print</div>
+          <div style="display:flex;gap:6px;margin-bottom:8px;align-items:center;flex-wrap:wrap">
+            <button class="btn btn-xs btn-ghost" onclick="bulkAll()">Select All</button>
+            <button class="btn btn-xs btn-ghost" onclick="bulkNone()">Clear</button>
+            <select id="bulk-filter-co" onchange="renderBulkPanel()" style="font-size:12px;padding:4px 8px;width:auto;flex:1;min-width:120px"></select>
+            <input type="text" id="bulk-search" placeholder="Search..." style="max-width:110px;padding:4px 8px;font-size:12px" oninput="renderBulkPanel()">
+            <span class="badge badge-blue" style="margin-left:auto"><span id="bulk-cnt">0</span> sel.</span>
+          </div>
+          <div class="scroll-box" id="bulk-panel" style="margin-bottom:10px"></div>
+          <button class="btn btn-primary" style="width:100%" onclick="printBulk()">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Bulk Print / Save PDF
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: EMAIL -->
+    <div class="page" id="page-email">
+      <div class="grid2">
+        <div>
+          <div class="card">
+            <div class="card-title"><span class="icon">⚙️</span> Gmail Settings</div>
+            <div class="form-group"><label class="form-label">Gmail Address</label><input type="text" id="gmail-user" placeholder="yourname@gmail.com"></div>
+            <div class="form-group"><label class="form-label">App Password <span style="font-weight:400;color:var(--text3)">(not your regular password)</span></label><input type="text" id="gmail-pass" placeholder="xxxx xxxx xxxx xxxx"></div>
+            <div class="form-group"><label class="form-label">Sender Name</label><input type="text" id="email-sender" placeholder="DTR System"></div>
+            <button class="btn btn-primary btn-sm" onclick="saveEmailSettings()">💾 Save Email Settings</button>
+            <div style="margin-top:10px;font-size:11px;color:var(--text3);line-height:1.6">
+              💡 To get a Gmail App Password:<br>
+              Google Account → Security → 2-Step Verification → App passwords → Create
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="icon">✉️</span> Email Template</div>
+            <div class="form-group">
+              <label class="form-label">Subject <span style="font-weight:400;color:var(--text3)">· use {{name}} {{period}}</span></label>
+              <input type="text" id="email-subject" placeholder="Your DTR — {{period}}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Body</label>
+              <textarea id="email-body" rows="5" placeholder="Dear {{name}}, please find attached your DTR..."></textarea>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="saveEmailSettings()">💾 Save Template</button>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-title"><span class="icon">📤</span> Send DTR</div>
+            <div class="form-group">
+  <label class="form-label">Company Filter</label>
+  <select id="email-filter-co" onchange="renderEmailPanel()"></select>
+</div>
+<div class="form-group">
+  <label class="form-label">Department Filter</label>
+  <select id="email-filter-dept" onchange="renderEmailPanel()">
+    <option value="">All Departments</option>
+  </select>
+</div>
+<div class="form-group">
+  <label class="form-label">Position Filter</label>
+  <select id="email-filter-pos" onchange="renderEmailPanel()">
+    <option value="">All Positions</option>
+  </select>
+</div>
+            <div class="form-group">
+              <label class="form-label">Select Employees</label>
+              <div style="display:flex;gap:6px;margin-bottom:6px">
+                <button class="btn btn-xs btn-ghost" onclick="emailSelAll()">All</button>
+                <button class="btn btn-xs btn-ghost" onclick="emailSelNone()">Clear</button>
+                <span class="badge badge-purple" style="margin-left:auto"><span id="email-sel-cnt">0</span> selected</span>
+              </div>
+              <div class="scroll-box" id="email-emp-panel"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Override Recipient Email <span style="font-weight:400;color:var(--text3)">(optional — leave blank to use each employee's own email)</span></label>
+              <input type="email" id="email-override" placeholder="Leave blank to send to each employee's own email">
+            </div>
+            <button class="btn btn-email" style="width:100%" onclick="sendEmails()" id="btn-send-email">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Send DTR via Email
+            </button>
+            <div id="email-result" style="margin-top:10px"></div>
+          </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: COMPANIES -->
+    <div class="page" id="page-companies">
+      <div class="grid2">
+        <div id="companies-list"></div>
+        <div class="card">
+          <div class="card-title"><span class="icon">📁</span> Logo File Setup</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.9">
+            <p>Place your logo files in the <code style="background:var(--bg);padding:2px 6px;border-radius:4px">CompanyLogo/</code> folder inside your <code style="background:var(--bg);padding:2px 6px;border-radius:4px">dtr/</code> folder:</p>
+            <div style="background:var(--navy2);border-radius:var(--r);padding:12px;font-family:'DM Mono',monospace;font-size:11px;color:#7dd3fc;line-height:2;margin:10px 0">
+              dtr/<br>
+              ├── CompanyLogo/<br>
+              │&nbsp;&nbsp;&nbsp;├── HHH-LOGO.jpg<br>
+              │&nbsp;&nbsp;&nbsp;├── MALAKING-IBONG-BUGHAW.jpg<br>
+              │&nbsp;&nbsp;&nbsp;├── MEN-IN-BLUE.jpg<br>
+              │&nbsp;&nbsp;&nbsp;└── MIB-SHARED-SERVICES.jpg<br>
+              ├── index.html<br>
+              ├── api.php<br>
+              └── db.php
+            </div>
+            <p>Logos appear automatically in the DTR header based on the employee's assigned company.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- MODAL: Add/Edit Employee -->
+<div class="modal-bg" id="modal-emp">
+  <div class="modal">
+    <div class="modal-title"><span style="font-size:19px">👤</span> <span id="modal-emp-title">Add Employee</span></div>
+    <input type="hidden" id="me-orig-devid">
+    <div class="form-row" style="margin-bottom:12px">
+      <div><label class="form-label">Device ID *</label><input type="text" id="me-devid" placeholder="e.g. 12"></div>
+      <div><label class="form-label">Employee ID *</label><input type="text" id="me-empid" placeholder="e.g. EMP-001"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Full Name *</label><input type="text" id="me-name" placeholder="Last, First Middle"></div>
+    <div class="form-row" style="margin-bottom:12px">
+      <div><label class="form-label">Company</label>
+        <select id="me-company"><option value="">— None —</option></select>
+      </div>
+      <div><label class="form-label">Department</label><input type="text" id="me-dept" placeholder="e.g. HEAD OFFICE"></div>
+    </div>
+    <div class="form-row" style="margin-bottom:12px">
+      <div><label class="form-label">Position</label><input type="text" id="me-pos" placeholder="e.g. Security Guard"></div>
+      <div><label class="form-label">Email Address</label><input type="email" id="me-email" placeholder="employee@email.com"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-sm" onclick="closeModal('modal-emp')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="saveEmployee()">💾 Save Employee</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Import USERINFO -->
+<div class="modal-bg" id="modal-import">
+  <div class="modal">
+    <div class="modal-title"><span style="font-size:19px">📊</span> Import USERINFO.csv</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Col 2 = DeviceID · Col 3 = EmployeeID · Col 4 = Name · Col 6 = Position</p>
+    <input type="file" id="fi-csv-modal" accept=".csv,.txt" style="font-size:13px;width:100%;padding:8px;border:1px solid var(--border2);border-radius:var(--r)">
+    <div id="res-csv-modal" style="margin-top:10px"></div>
+    <div class="modal-footer">
+      <button class="btn btn-sm" onclick="closeModal('modal-import')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="uploadUserinfoModal()">Import</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="print-area"></div>
+
+<script>
+// ═══════════════════════════════
+// STATE
+// ═══════════════════════════════
+let employees  = [];
+let attendance = [];
+let companies  = [];
+let bulkSel       = new Set();
+let emailSel      = new Set();
+let lastPrintSel  = '';
+
+// ═══════════════════════════════
+// INIT
+// ═══════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
+  await Promise.all([loadCompanies(), loadSettings()]);
+  await loadEmployees();
+  await loadRecords();
+  loadDateRange();
+});
+
+// ═══════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════
+const pageMeta = {
+  records:   ['Attendance Records',  'Browse all DTR records from the database'],
+  employees: ['Employee Directory',  'Manage employees stored in the system'],
+  upload:    ['Upload Data',         'Upload attlog.dat and USERINFO.csv files'],
+  settings:  ['Print Settings',      'Configure document header and layout options'],
+  print:     ['Print / Export PDF',  'Single employee or bulk print and save'],
+  email:     ['Send via Email',       'Send DTR as JPEG attachment via Gmail'],
+  companies: ['Companies',           'Manage the 4 companies and their logos'],
+};
+function goTo(p) {
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(x => x.classList.remove('active'));
+  document.getElementById('page-' + p)?.classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    if (b.getAttribute('onclick')?.includes("'" + p + "'")) b.classList.add('active');
+  });
+  document.getElementById('page-title').textContent = pageMeta[p][0];
+  document.getElementById('page-sub').textContent   = pageMeta[p][1];
+  if (p === 'employees') renderEmpTable();
+  if (p === 'settings')  refreshSettingsPreview();
+  if (p === 'print')     { fillCompanyDropdowns(); fillSelects(); renderBulkPanel(); }
+  if (p === 'email')     { fillCompanyDropdowns(); renderEmailPanel(); loadEmailSettings(); }
+  if (p === 'companies') renderCompaniesPage();
+}
+function clearEmpFilters() {
+  ['emp-filter-co','emp-filter-dept','emp-filter-pos'].forEach(id => document.getElementById(id).value = '');
+  renderEmpTable();
+}
+// ═══════════════════════════════
+// API
+// ═══════════════════════════════
+async function api(action, params={}, body=null) {
+  const qs  = new URLSearchParams({action,...params}).toString();
+  const opt = body
+    ? {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}
+    : {method:'GET'};
+  const res = await fetch('api.php?'+qs, opt);
+  return res.json();
+}
+async function apiForm(action, fd) {
+  const res = await fetch('api.php?action='+action, {method:'POST',body:fd});
+  return res.json();
+}
+
+// ═══════════════════════════════
+// COMPANIES
+// ═══════════════════════════════
+async function loadCompanies() {
+  const r = await api('get_companies');
+  if (r.success) {
+    companies = r.data;
+    fillCompanyDropdowns();
+  }
+}
+
+function fillCompanyDropdowns() {
+  const opts = '<option value="">All Companies</option>'
+    + companies.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+  const singleOpts = '<option value="">— No Filter —</option>'
+    + companies.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+
+  ['rec-filter-co','emp-filter-co','bulk-filter-co','email-filter-co'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = opts;
+  });
+  ['prev-filter-co','print-filter-co'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = singleOpts;
+  });
+  // Employee modal company dropdown
+  const meCo = document.getElementById('me-company');
+  if (meCo) meCo.innerHTML = '<option value="">— None —</option>'
+    + companies.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+}
+
+function renderCompaniesPage() {
+  const list = document.getElementById('companies-list');
+  list.innerHTML = companies.map(c => `
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+        <img src="${c.logo_file}" onerror="this.style.display='none'" style="height:44px;max-width:140px;object-fit:contain">
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:var(--navy2)">${c.name}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${c.logo_file || 'No logo path'}</div>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Company Name</label>
+        <input type="text" id="co-n-${c.id}" value="${c.name}">
+      </div>
+      <div class="form-group"><label class="form-label">Address</label>
+        <input type="text" id="co-a-${c.id}" value="${c.address||''}">
+      </div>
+      <div class="form-group"><label class="form-label">Logo File Path</label>
+        <input type="text" id="co-l-${c.id}" value="${c.logo_file||''}">
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="saveCompany(${c.id})">💾 Save</button>
+    </div>`).join('');
+}
+
+async function saveCompany(id) {
+  const r = await api('save_company', {}, {
+    id,
+    name:      document.getElementById('co-n-'+id).value,
+    address:   document.getElementById('co-a-'+id).value,
+    logo_file: document.getElementById('co-l-'+id).value,
+  });
+  if (r.success) { showToast('✓ Company saved'); await loadCompanies(); renderCompaniesPage(); }
+  else showToast('❌ ' + r.msg);
+}
+
+// ═══════════════════════════════
+// EMPLOYEES
+// ═══════════════════════════════
+async function loadEmployees() {
+  const r = await api('get_employees');
+  if (r.success) {
+    employees = r.data;
+    document.getElementById('nb-emp').textContent  = employees.length;
+    document.getElementById('sb-emps').textContent = employees.length;
+    updateTopBadge();
+    // Rebuild rec-filter-emp
+    const empSel = document.getElementById('rec-filter-emp');
+    const prev   = empSel.value;
+    empSel.innerHTML = '<option value="">All employees</option>'
+      + employees.map(e => `<option value="${e.device_id}">${e.full_name} (${e.employee_id})</option>`).join('');
+    if (prev) empSel.value = prev;
+  }
+}
+
+function renderEmpTable() {
+  const coFilter   = document.getElementById('emp-filter-co')?.value || '';
+  const deptFilter = document.getElementById('emp-filter-dept')?.value || '';
+  const posFilter  = document.getElementById('emp-filter-pos')?.value || '';
+  const list = employees.filter(e => {
+    if (coFilter   && e.company    !== coFilter)   return false;
+    if (deptFilter && e.department !== deptFilter) return false;
+    if (posFilter  && e.position   !== posFilter)  return false;
+    return true;
+  });
+  const depts = [...new Set(employees.map(e=>e.department).filter(Boolean))].sort();
+const posts = [...new Set(employees.map(e=>e.position).filter(Boolean))].sort();
+const deptSel = document.getElementById('emp-filter-dept');
+const posSel  = document.getElementById('emp-filter-pos');
+const prevDept = deptSel.value, prevPos = posSel.value;
+deptSel.innerHTML = '<option value="">All Departments</option>' + depts.map(d=>`<option value="${d}">${d}</option>`).join('');
+posSel.innerHTML  = '<option value="">All Positions</option>'  + posts.map(p=>`<option value="${p}">${p}</option>`).join('');
+if (prevDept) deptSel.value = prevDept;
+if (prevPos)  posSel.value  = prevPos;
+  const tbody = document.getElementById('emp-tbody');
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text3)">${coFilter ? 'No employees in this company.' : 'No employees yet.'}</td></tr>`;
+    document.getElementById('emp-lbl').textContent = '';
+    return;
+  }
+  tbody.innerHTML = list.map(e => `
+    <tr>
+      <td class="mono">${e.device_id}</td>
+      <td class="mono">${e.employee_id}</td>
+      <td style="font-weight:600">${e.full_name}</td>
+      <td><span class="badge badge-blue" style="font-size:10px">${e.company||'—'}</span></td>
+      <td>${e.department||'<span class="dim">—</span>'}</td>
+      <td>${e.position||'<span class="dim">—</span>'}</td>
+      <td class="mono" style="font-size:11px">${e.email||'<span class="dim">—</span>'}</td>
+      <td style="text-align:center">
+        <button class="btn btn-xs" onclick="editEmployee('${e.device_id}')">Edit</button>
+        <button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="deleteEmployee('${e.device_id}','${e.full_name.replace(/'/g,"\\'")}')">Delete</button>
+      </td>
+    </tr>`).join('');
+  document.getElementById('emp-lbl').textContent = list.length + ' employees';
+}
+
+function openAddEmployee() {
+  document.getElementById('modal-emp-title').textContent = 'Add Employee';
+  document.getElementById('me-orig-devid').value = '';
+  ['me-devid','me-empid','me-name','me-dept','me-pos','me-email'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('me-company').value = '';
+  openModal('modal-emp');
+}
+function editEmployee(devId) {
+  const e = employees.find(x => x.device_id===devId); if(!e) return;
+  document.getElementById('modal-emp-title').textContent = 'Edit Employee';
+  document.getElementById('me-orig-devid').value = e.device_id;
+  document.getElementById('me-devid').value  = e.device_id;
+  document.getElementById('me-empid').value  = e.employee_id;
+  document.getElementById('me-name').value   = e.full_name;
+  document.getElementById('me-dept').value   = e.department||'';
+  document.getElementById('me-pos').value    = e.position||'';
+  document.getElementById('me-company').value= e.company||'';
+  document.getElementById('me-email').value  = e.email||'';
+  openModal('modal-emp');
+}
+async function saveEmployee() {
+  const devId = document.getElementById('me-devid').value.trim();
+  const empId = document.getElementById('me-empid').value.trim();
+  const name  = document.getElementById('me-name').value.trim();
+  if (!devId||!empId||!name) { showToast('Device ID, Employee ID and Name are required'); return; }
+  const r = await api('add_employee',{},{
+    device_id:   devId, employee_id: empId, full_name: name,
+    department:  document.getElementById('me-dept').value.trim(),
+    position:    document.getElementById('me-pos').value.trim(),
+    company:     document.getElementById('me-company').value,
+    email:       document.getElementById('me-email').value.trim(),
+  });
+  if (r.success) {
+    showToast('✓ '+r.msg); closeModal('modal-emp');
+    await loadEmployees(); renderEmpTable(); fillSelects();
+  } else showToast('❌ '+r.msg);
+}
+async function deleteEmployee(devId, name) {
+  if (!confirm('Delete "'+name+'"?')) return;
+  const r = await api('delete_employee',{},{device_id:devId});
+  if (r.success) { showToast('✓ Deleted'); await loadEmployees(); renderEmpTable(); fillSelects(); }
+}
+async function uploadUserinfoModal() {
+  const fi = document.getElementById('fi-csv-modal');
+  if (!fi.files.length) { showToast('Select a file first'); return; }
+  const fd = new FormData(); fd.append('file', fi.files[0]);
+  const r  = await apiForm('import_userinfo', fd);
+  document.getElementById('res-csv-modal').innerHTML = `<div class="upload-result ${r.success?'upload-ok':'upload-err'}">${r.msg}</div>`;
+  if (r.success) { await loadEmployees(); renderEmpTable(); fillSelects(); }
+}
+async function uploadUserinfo() {
+  const fi = document.getElementById('fi-csv');
+  if (!fi.files.length) { showToast('Select a file first'); return; }
+  const fd = new FormData(); fd.append('file', fi.files[0]);
+  const r  = await apiForm('import_userinfo', fd);
+  document.getElementById('res-csv').innerHTML = `<div class="upload-result ${r.success?'upload-ok':'upload-err'}">${r.msg}</div>`;
+  if (r.success) { showToast('✓ '+r.msg); await loadEmployees(); fillSelects(); }
+}
+function exportUserinfo() { window.open('api.php?action=export_userinfo','_blank'); }
+
+// ═══════════════════════════════
+// RECORDS
+// ═══════════════════════════════
+async function loadRecords() {
+  const from = document.getElementById('rec-from').value;
+  const to   = document.getElementById('rec-to').value;
+  const dev  = document.getElementById('rec-filter-emp').value;
+  const co   = document.getElementById('rec-filter-co').value;
+  const r    = await api('get_attendance',{from,to,device_id:dev,company:co});
+  if (!r.success) { showToast('Failed to load records'); return; }
+  attendance = r.data;
+  const uniEmps = [...new Set(attendance.map(x=>x.device_id))];
+  document.getElementById('st-emps').textContent    = uniEmps.length;
+  document.getElementById('st-days').textContent    = attendance.length;
+  document.getElementById('st-timein').textContent  = attendance.filter(x=>x.time_in).length;
+  document.getElementById('st-missing').textContent = attendance.filter(x=>!x.time_in||!x.time_out).length;
+  document.getElementById('nb-rec').textContent     = attendance.length;
+  document.getElementById('sb-days').textContent    = attendance.length;
+  updateTopBadge();
+  renderTable();
+}
+function renderTable() {
+  const empF  = document.getElementById('rec-filter-emp').value;
+  const fromF = document.getElementById('rec-from').value;
+  const toF   = document.getElementById('rec-to').value;
+  const coF   = document.getElementById('rec-filter-co').value;
+  let rows = attendance.filter(r=>{
+    if (empF  && r.device_id  !== empF)  return false;
+    if (fromF && r.work_date  < fromF)   return false;
+    if (toF   && r.work_date  > toF)     return false;
+    if (coF   && r.company    !== coF)   return false;
+    return true;
+  });
+  const tbody = document.getElementById('rec-tbody');
+  if (!rows.length) {
+    tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text3)">No records found</td></tr>';
+    document.getElementById('rec-lbl').textContent=''; return;
+  }
+  tbody.innerHTML = rows.map(r=>`
+    <tr>
+      <td class="mono">${r.employee_id}</td>
+      <td style="font-weight:600">${r.full_name}</td>
+      <td><span class="badge badge-blue" style="font-size:10px">${r.company||'—'}</span></td>
+      <td>${r.department||'<span class="dim">—</span>'}</td>
+      <td class="mono">${formatDate(r.work_date)}</td>
+      <td>${getDayName(r.work_date)}</td>
+      <td class="mono ${r.time_in?'time-in':'dim'}">${r.time_in?fmtTime(r.time_in):'—'}</td>
+      <td class="mono ${r.time_out?'time-out':'dim'}">${r.time_out?fmtTime(r.time_out):'—'}</td>
+      <td class="mono" style="font-weight:600">${r.total_hours||'<span class="dim">—</span>'}</td>
+    </tr>`).join('');
+  document.getElementById('rec-lbl').textContent = rows.length+' records shown';
+}
+function onCompanyFilterChange() { loadRecords(); }
+function clearRecFilters() {
+  ['rec-filter-emp','rec-filter-co','rec-from','rec-to'].forEach(id=>document.getElementById(id).value='');
+  renderTable();
+}
+async function loadDateRange() {
+  const r = await api('get_date_range');
+  if (r.success && r.data?.min_date) {
+    const {min_date,max_date} = r.data;
+    ['df','dt','rec-from','rec-to'].forEach((id,i)=>document.getElementById(id).value=[min_date,max_date,min_date,max_date][i]);
+    document.getElementById('sb-period').textContent = min_date.slice(5)+' – '+max_date.slice(5);
+  }
+}
+
+// ═══════════════════════════════
+// UPLOAD
+// ═══════════════════════════════
+async function syncDevice() {
+    const btn = document.getElementById('btn-sync-device');
+    btn.innerHTML = '<span class="spinner"></span> Connecting...'; btn.disabled = true;
+    const r = await api('sync_device');
+    btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg> Sync';
+    btn.disabled = false;
+    document.getElementById('res-sync').innerHTML = `<div class="upload-result ${r.success ? 'upload-ok' : 'upload-err'}">${r.msg}</div>`;
+    if (r.success) { showToast('✓ ' + r.msg, 'success'); await loadRecords(); loadDateRange(); }
+    else showToast('❌ ' + r.msg, 'error');
+}
+async function uploadAttlog() {
+  const fi  = document.getElementById('fi-dat');
+  const btn = document.getElementById('btn-upload-dat');
+  if (!fi.files.length) { showToast('Select a file first'); return; }
+  btn.innerHTML='<span class="spinner"></span> Processing...'; btn.disabled=true;
+  const fd = new FormData(); fd.append('file',fi.files[0]);
+  const r  = await apiForm('upload_attlog',fd);
+  btn.innerHTML='Upload & Process'; btn.disabled=false;
+  document.getElementById('res-dat').innerHTML=`<div class="upload-result ${r.success?'upload-ok':'upload-err'}">${r.msg}</div>`;
+  if (r.success) { showToast('✓ '+r.msg); await loadRecords(); loadDateRange(); }
+  else showToast('❌ '+r.msg);
+}
+async function clearAllAttendance() {
+  if (!confirm('⚠️ Delete ALL attendance records? This cannot be undone.')) return;
+  const r = await api('clear_attendance',{},{});
+  if (r.success) {
+    showToast('✓ Cleared'); attendance=[];
+    ['st-emps','st-days','st-timein','st-missing'].forEach(id=>document.getElementById(id).textContent=0);
+    renderTable();
+  }
+}
+
+// ═══════════════════════════════
+// SETTINGS
+// ═══════════════════════════════
+async function loadSettings() {
+  const r = await api('get_settings');
+  if (r.success) {
+    const s = r.data;
+    document.getElementById('co-name').value     = s.company_name    ||'';
+    document.getElementById('co-addr').value     = s.company_address ||'';
+    document.getElementById('co-dept').value     = s.department      ||'';
+    document.getElementById('co-approver').value = s.approver        ||'';
+  }
+}
+async function saveSettings() {
+  const r = await api('save_settings',{},{
+    company_name:    document.getElementById('co-name').value,
+    company_address: document.getElementById('co-addr').value,
+    department:      document.getElementById('co-dept').value,
+    approver:        document.getElementById('co-approver').value,
+  });
+  if (r.success) { showToast('✓ Settings saved'); refreshSettingsPreview(); }
+}
+async function loadEmailSettings() {
+  const r = await api('get_settings');
+  if (r.success) {
+    const s = r.data;
+    document.getElementById('gmail-user').value    = s.gmail_user          ||'';
+    document.getElementById('gmail-pass').value    = s.gmail_pass          ||'';
+    document.getElementById('email-sender').value  = s.email_sender_name   ||'DTR System';
+    document.getElementById('email-subject').value = s.email_subject        ||'';
+    document.getElementById('email-body').value    = s.email_body           ||'';
+  }
+}
+async function saveEmailSettings() {
+  const r = await api('save_settings',{},{
+    gmail_user:        document.getElementById('gmail-user').value,
+    gmail_pass:        document.getElementById('gmail-pass').value,
+    email_sender_name: document.getElementById('email-sender').value,
+    email_subject:     document.getElementById('email-subject').value,
+    email_body:        document.getElementById('email-body').value,
+  });
+  if (r.success) showToast('✓ Email settings saved');
+}
+
+// ═══════════════════════════════
+// PREVIEW
+// ═══════════════════════════════
+function fillSelects() {
+  const sorted = [...employees].sort((a,b)=>a.full_name.localeCompare(b.full_name));
+  const makeOpts = (filterCo) => {
+    const list = filterCo ? sorted.filter(e=>e.company===filterCo) : sorted;
+    return '<option value="">— select employee —</option>'
+      + list.map(e=>`<option value="${e.device_id}">${e.full_name} (${e.employee_id})</option>`).join('');
+  };
+  document.getElementById('prev-sel').innerHTML    = makeOpts(document.getElementById('prev-filter-co')?.value||'');
+  document.getElementById('single-sel').innerHTML  = makeOpts(document.getElementById('print-filter-co')?.value||'');
+}
+function onPreviewCoChange() { fillSelects(); renderPreview(); }
+function onPrintCoChange()   { fillSelects(); renderBulkPanel(); }
+
+function renderPreview() {
+  const k    = document.getElementById('prev-sel').value;
+  const body = document.getElementById('prev-body');
+  const info = document.getElementById('prev-info');
+  if (!k) {
+    body.innerHTML='<div class="preview-empty"><div style="font-size:48px">📋</div><div style="font-size:14px;font-weight:600">Select an employee above</div></div>';
+    info.textContent=''; return;
+  }
+  const emp  = employees.find(e=>e.device_id===k);
+  const recs = getFilteredRecs(k);
+  body.innerHTML=`<div style="background:#fff;box-shadow:0 4px 20px rgba(0,0,0,.15);width:100%">${buildDTR(k)}</div>`;
+  info.textContent=(emp?.full_name||k)+' · '+recs.length+' punch days';
+}
+function refreshSettingsPreview() {
+  const body = document.getElementById('settings-prev-body');
+  const lbl  = document.getElementById('settings-prev-lbl');
+  if (!body) return;
+  const emp = employees[0];
+  if (!emp) {
+    body.innerHTML = '<div class="preview-empty"><div style="font-size:36px">📋</div><div style="font-size:13px;font-weight:600">No employees loaded yet</div></div>';
+    if (lbl) lbl.textContent = '';
+    return;
+  }
+  const recs = getFilteredRecs(emp.device_id);
+  body.innerHTML = `<div style="background:#fff;box-shadow:0 4px 20px rgba(0,0,0,.15);width:100%">${buildDTR(emp.device_id)}</div>`;
+  if (lbl) lbl.textContent = (emp.full_name || emp.device_id) + ' · ' + recs.length + ' punch days';
+}
+function prevEmp() {
+  const sel=document.getElementById('prev-sel'),opts=Array.from(sel.options),i=opts.findIndex(o=>o.value===sel.value);
+  if(i>1){sel.value=opts[i-1].value;renderPreview();}
+}
+function nextEmp() {
+  const sel=document.getElementById('prev-sel'),opts=Array.from(sel.options),i=opts.findIndex(o=>o.value===sel.value);
+  if(i>=0&&i<opts.length-1){sel.value=opts[i+1].value;renderPreview();}
+}
+
+// ═══════════════════════════════
+// BULK PANEL
+// ═══════════════════════════════
+function renderBulkPanel() {
+  const q   = (document.getElementById('bulk-search')?.value||'').toLowerCase();
+  const coF = document.getElementById('bulk-filter-co')?.value||'';
+  const sorted = [...employees]
+    .filter(e=>(!coF||e.company===coF)&&(!q||e.full_name.toLowerCase().includes(q)||e.employee_id.toLowerCase().includes(q)))
+    .sort((a,b)=>a.full_name.localeCompare(b.full_name));
+  const c = document.getElementById('bulk-panel');
+  if (!sorted.length){c.innerHTML='<p style="padding:12px;font-size:12px;color:var(--text3)">No employees.</p>';return;}
+  c.innerHTML=sorted.map(e=>`
+    <label class="bulk-item">
+      <input type="checkbox" ${bulkSel.has(e.device_id)?'checked':''} onchange="toggleBulk('${e.device_id}',this.checked)">
+      <div class="emp-avatar">${initials(e.full_name)}</div>
+      <label style="flex:1;font-size:13px;font-weight:600;cursor:pointer">${e.full_name}</label>
+      <span class="mono" style="font-size:11px;color:var(--text3)">${e.employee_id}</span>
+    </label>`).join('');
+  updateBulkCnt();
+}
+function toggleBulk(k,v){v?bulkSel.add(k):bulkSel.delete(k);updateBulkCnt();}
+function bulkAll(){employees.forEach(e=>bulkSel.add(e.device_id));renderBulkPanel();}
+function bulkNone(){bulkSel.clear();renderBulkPanel();}
+function updateBulkCnt(){document.getElementById('bulk-cnt').textContent=bulkSel.size;}
+function printBulk(){
+  const keys=[...bulkSel];
+  if(!keys.length){showToast('Select at least one employee');return;}
+  openPDFWindow(keys);
+}
+
+// ═══════════════════════════════
+// EMAIL PANEL
+// ═══════════════════════════════
+function renderEmailPanel() {
+  const coF   = document.getElementById('email-filter-co')?.value||'';
+  const deptF = document.getElementById('email-filter-dept')?.value||'';
+  const posF  = document.getElementById('email-filter-pos')?.value||'';
+
+  const depts   = [...new Set(employees.map(e=>e.department).filter(Boolean))].sort();
+  const posts   = [...new Set(employees.map(e=>e.position).filter(Boolean))].sort();
+  const deptSel = document.getElementById('email-filter-dept');
+  const posSel  = document.getElementById('email-filter-pos');
+  const prevD   = deptSel.value, prevP = posSel.value;
+  deptSel.innerHTML = '<option value="">All Departments</option>' + depts.map(d=>`<option value="${d}">${d}</option>`).join('');
+  posSel.innerHTML  = '<option value="">All Positions</option>'  + posts.map(p=>`<option value="${p}">${p}</option>`).join('');
+  if (prevD) deptSel.value = prevD;
+  if (prevP) posSel.value  = prevP;
+
+  const sorted = [...employees]
+    .filter(e=>(!coF||e.company===coF)&&(!deptF||e.department===deptF)&&(!posF||e.position===posF))
+    .sort((a,b)=>a.full_name.localeCompare(b.full_name));
+  const c = document.getElementById('email-emp-panel');
+  if (!sorted.length){c.innerHTML='<p style="padding:12px;font-size:12px;color:var(--text3)">No employees.</p>';return;}
+  c.innerHTML=sorted.map(e=>`
+    <label class="bulk-item">
+      <input type="checkbox" ${emailSel.has(e.device_id)?'checked':''} onchange="toggleEmail('${e.device_id}',this.checked)">
+      <div class="emp-avatar">${initials(e.full_name)}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600">${e.full_name}</div>
+        <div style="font-size:11px;color:${e.email?'var(--text3)':'var(--red)'}">${e.email||'⚠ No email saved'}</div>
+      </div>
+    </label>`).join('');
+  updateEmailCnt();
+}
+function toggleEmail(k,v){v?emailSel.add(k):emailSel.delete(k);updateEmailCnt();}
+function emailSelAll(){employees.forEach(e=>emailSel.add(e.device_id));renderEmailPanel();}
+function emailSelNone(){emailSel.clear();renderEmailPanel();}
+function updateEmailCnt(){document.getElementById('email-sel-cnt').textContent=emailSel.size;}
+function onEmailCoChange(){renderEmailPanel();}
+
+async function sendEmails() {
+  const keys = [...emailSel];
+  if (!keys.length){showToast('Select at least one employee');return;}
+  const df  = document.getElementById('df').value;
+  const dt  = document.getElementById('dt').value;
+  if (!df||!dt){showToast('Set the attendance period in Print Settings first');return;}
+  const override = document.getElementById('email-override').value.trim();
+  const subject  = document.getElementById('email-subject').value;
+  const body     = document.getElementById('email-body').value;
+  const btn      = document.getElementById('btn-send-email');
+  btn.innerHTML  = '<span class="spinner"></span> Sending...'; btn.disabled=true;
+
+  const r = await api('send_dtr_bulk',{},{
+    device_ids: keys, date_from: df, date_to: dt,
+    recipient:  override, subject, body,
+  });
+  btn.innerHTML='<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Send DTR via Email';
+  btn.disabled=false;
+  const resultDiv = document.getElementById('email-result');
+  resultDiv.innerHTML=`<div class="upload-result ${r.success?'upload-ok':'upload-err'}">${r.msg}</div>`;
+  showToast(r.success?'✓ '+r.msg:'❌ '+r.msg, r.success?'success':'error');
+}
+
+// ═══════════════════════════════
+// DTR BUILDER
+// ═══════════════════════════════
+function getFilteredRecs(deviceId) {
+  const df=document.getElementById('df').value;
+  const dt=document.getElementById('dt').value;
+  return attendance
+    .filter(r=>r.device_id===deviceId)
+    .filter(r=>(!df||r.work_date>=df)&&(!dt||r.work_date<=dt))
+    .sort((a,b)=>a.work_date.localeCompare(b.work_date));
+}
+
+// ═══════════════════════════════
+// LOGO BASE64 CACHE
+// ═══════════════════════════════
+const logoCache = {}; 
+
+async function getLogoBase64(logoSrc) {
+  if (!logoSrc) return '';
+  if (logoCache[logoSrc]) return logoCache[logoSrc];
+  try {
+    const res  = await fetch(logoSrc);
+    const blob = await res.blob();
+    return await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload  = () => { logoCache[logoSrc] = reader.result; resolve(reader.result); };
+      reader.onerror = () => resolve('');
+      reader.readAsDataURL(blob);
+    });
+  } catch(e) { return ''; }
+}
+
+// ═══════════════════════════════
+// DTR ROW BUILDER (shared)
+// ═══════════════════════════════
+function buildDTRRows(deviceId) {
+  const recs   = getFilteredRecs(deviceId);
+  const df     = document.getElementById('df').value;
+  const dt     = document.getElementById('dt').value;
+  const zebra  = document.getElementById('opt-zebra').checked;
+  const recMap = {};
+  recs.forEach(r=>recMap[r.work_date]=r);
+
+  let rows='', totalMins=0, daysPresent=0, rowIdx=0;
+  if (df && dt) {
+    const start=new Date(df+'T00:00:00'), end=new Date(dt+'T00:00:00');
+    for (let d=new Date(start); d<=end; d.setDate(d.getDate()+1)) {
+      const year  = d.getFullYear();
+const month = String(d.getMonth() + 1).padStart(2, '0');
+const day   = String(d.getDate()).padStart(2, '0');
+const dateStr = `${year}-${month}-${day}`;
+      const r=recMap[dateStr];
+      const timeIn=r?.time_in||'', timeOut=r?.time_out||'';
+      let hrs='—';
+      if (timeIn&&timeOut) {
+        const[ih,im]=timeIn.split(':').map(Number),[oh,om]=timeOut.split(':').map(Number);
+        let diff=(oh*60+om)-(ih*60+im); if(diff<0)diff+=1440; totalMins+=diff;
+        hrs = (diff / 60).toFixed(1) + ' hrs';
+      }
+      if (timeIn) daysPresent++;
+      const bg=zebra&&rowIdx%2===1?'background:#eef4ff':'';
+      rows+=`<tr style="${bg}">
+        <td class="left">${formatDate(dateStr)}</td>
+        <td>${getDayName(dateStr)}</td>
+        <td style="color:${timeIn?'#15803d':'#94a3b8'};font-weight:${timeIn?'600':'400'}">${timeIn?fmtTime(timeIn):'—'}</td>
+        <td style="color:${timeOut?'#dc2626':'#94a3b8'};font-weight:${timeOut?'600':'400'}">${timeOut?fmtTime(timeOut):'—'}</td>
+        <td style="font-weight:600">${hrs}</td>
+        <td class="left">&nbsp;</td>
+      </tr>`;
+      rowIdx++;
+    }
+  } else {
+    recs.forEach((r,i)=>{
+      const timeIn=r.time_in||'',timeOut=r.time_out||'';
+      let hrs='—';
+      if(timeIn&&timeOut){const[ih,im]=timeIn.split(':').map(Number),[oh,om]=timeOut.split(':').map(Number);let diff=(oh*60+om)-(ih*60+im);if(diff<0)diff+=1440;totalMins+=diff;hrs=Math.floor(diff/60)+'h '+(diff%60)+'m';}
+      if(timeIn)daysPresent++;
+      const bg=zebra&&i%2===1?'background:#eef4ff':'';
+      rows+=`<tr style="${bg}"><td class="left">${formatDate(r.work_date)}</td><td>${getDayName(r.work_date)}</td><td>${timeIn?fmtTime(timeIn):'—'}</td><td>${timeOut?fmtTime(timeOut):'—'}</td><td>${hrs}</td><td class="left">&nbsp;</td></tr>`;
+    });
+  }
+  return { rows, totalMins, daysPresent, recCount: recs.length };
+}
+
+// ═══════════════════════════════
+// BUILD DTR — PREVIEW 
+// ═══════════════════════════════
+function buildDTR(deviceId) {
+  const emp      = employees.find(e=>e.device_id===deviceId);
+  const df       = document.getElementById('df').value;
+  const dt       = document.getElementById('dt').value;
+  const showTot  = document.getElementById('opt-total').checked;
+  const bionote  = document.getElementById('opt-bionote').checked;
+  const approver = document.getElementById('co-approver').value;
+  const co       = companies.find(c=>c.name===emp?.company);
+  const coName   = co?.name    || document.getElementById('co-name').value;
+  const coAddr   = co?.address || document.getElementById('co-addr').value;
+  const coDept   = document.getElementById('co-dept').value;
+  const logoSrc  = co?.logo_file || '';
+
+  const {rows, totalMins, daysPresent, recCount} = buildDTRRows(deviceId);
+  const totalDisp =
+  totalMins > 0
+    ? (totalMins / 60).toFixed(1) + ' hrs'
+    : '—';
+
+
+  const logoW = '200px';
+  const headerHtml = `
+  <div class="dtr-header-row">
+    <div style="width:${logoW};flex-shrink:0">
+      ${logoSrc?`<img src="${logoSrc}" class="dtr-logo" onerror="this.style.display='none'">`:''}
+    </div>
+    <div class="dtr-header-center">
+      <div class="dtr-co-name">${coName}</div>
+      ${coAddr?`<div class="dtr-co-addr">${coAddr}</div>`:''}
+      ${coDept?`<div class="dtr-dept">${coDept}</div>`:''}
+    </div>
+    <div style="width:${logoW};flex-shrink:0;display:flex;align-items:center;justify-content:flex-end">
+      ${logoSrc?`<img src="${logoSrc}" style="height:80px;max-width:190px;object-fit:contain" onerror="this.style.display='none'">`:''}
+    </div>
+  </div>
+  <hr class="dtr-divider">
+  <div class="dtr-dtr-label">Daily Time Record</div>
+  <hr class="dtr-divider-thin">`;
+
+  return `<div class="dtr-doc">
+  ${headerHtml}
+  <div class="dtr-period">Attendance Period: <strong>${formatDate(df)} — ${formatDate(dt)}</strong></div>
+  <div class="dtr-emp-bar">
+    <div><span>Employee ID: </span><strong>${emp?.employee_id||deviceId}</strong></div>
+    <div><span>Name: </span><strong>${emp?.full_name||'Device #'+deviceId}</strong></div>
+    <div><span>Days Present: </span><strong>${daysPresent}</strong></div>
+    ${emp?.position?`<div><span>Position: </span><strong>${emp.position}</strong></div>`:'<div></div>'}
+    ${emp?.department?`<div><span>Department: </span><strong>${emp.department}</strong></div>`:'<div></div>'}
+    <div><span>Total Hours: </span><strong>${totalDisp}</strong></div>
+  </div>
+  <div class="dtr-table-wrap">
+    <table class="dtr-table">
+      <thead><tr>
+        <th class="left">Date</th><th>Day</th><th>Time In</th><th>Time Out</th><th>Total Hours</th><th class="left">Remarks</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+      ${showTot?`<tfoot><tr><td colspan="2">Total</td><td></td><td></td><td>${totalDisp}</td><td>${recCount} days w/ punch</td></tr></tfoot>`:''}
+    </table>
+  </div>
+  <div class="dtr-sigs">
+    <div class="dtr-sig"><div style="height:34px"></div><div class="dtr-sig-line"></div><div class="dtr-sig-label">Employee Signature</div><div class="dtr-sig-sub">${emp?.full_name||''}</div></div>
+    <div class="dtr-sig"><div style="height:34px"></div><div class="dtr-sig-line"></div><div class="dtr-sig-label">Approved By</div>${approver?`<div class="dtr-sig-sub">${approver}</div>`:''}</div>
+  </div>
+  ${bionote?'<div class="dtr-footnote">The details of this DTR were extracted from the biometric device and converted to this document.</div>':''}
+</div>`;
+}
+ 
+
+// BUILD DTR — PRINT 
+function buildDTRPrint(deviceId, logoB64) {
+  const emp      = employees.find(e=>e.device_id===deviceId);
+  const df       = document.getElementById('df').value;
+  const dt       = document.getElementById('dt').value;
+  const showTot  = document.getElementById('opt-total').checked;
+  const bionote  = document.getElementById('opt-bionote').checked;
+  const approver = document.getElementById('co-approver').value;
+  const co       = companies.find(c=>c.name===emp?.company);
+  const coName   = co?.name    || document.getElementById('co-name').value;
+  const coAddr   = co?.address || document.getElementById('co-addr').value;
+  const coDept   = document.getElementById('co-dept').value;
+
+  const {rows, totalMins, daysPresent, recCount} = buildDTRRows(deviceId);
+  const totalDisp = totalMins>0 ? (totalMins/60).toFixed(1)+' hrs' : '—';
+
+  const logoImg = logoB64 ? `<img src="${logoB64}" style="height:120px;max-width:280px;object-fit:contain">` : '';
+  const watermark   = logoB64 ? `<div class="dtr-watermark"><img src="${logoB64}"></div>` : '';
+
+  return `<div class="dtr-doc" style="position:relative">
+  ${watermark}
+  <div style="display:flex;align-items:center;gap:18px;margin-bottom:0">
+    <div style="flex-shrink:0">${logoImg}</div>
+    <div style="flex:1;text-align:center;padding-right:120px;padding-top:30px">
+      <div style="font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#0c1428;line-height:1.2">${coName}</div>
+      ${coAddr?`<div style="font-size:11px;color:#444;margin-top:4px;letter-spacing:.01em">${coAddr}</div>`:''}
+      ${coDept?`<div style="font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:.1em;margin-top:4px">${coDept}</div>`:''}
+    </div>
+  </div>  
+  <hr style="border:none;border-top:2.5px solid #1e3a8a;margin:8px 0 4px">
+  <div style="text-align:center;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#1e40af;margin:4px 0 2px">Daily Time Record</div>
+  <hr style="border:none;border-top:1px solid #93c5fd;margin:3px 0 8px">
+  <div style="text-align:center;font-size:9.5px;margin-bottom:10px;color:#555">Attendance Period: <strong style="color:#1d4ed8;font-weight:700">${formatDate(df)} — ${formatDate(dt)}</strong></div>
+  <div class="dtr-emp-bar">
+    <div><span>Employee ID: </span><strong>${emp?.employee_id||deviceId}</strong></div>
+    <div><span>Name: </span><strong>${emp?.full_name||'Device #'+deviceId}</strong></div>
+    <div><span>Days Present: </span><strong>${daysPresent}</strong></div>
+    ${emp?.position?`<div><span>Position: </span><strong>${emp.position}</strong></div>`:'<div></div>'}
+    ${emp?.department?`<div><span>Department: </span><strong>${emp.department}</strong></div>`:'<div></div>'}
+    <div><span>Total Hours: </span><strong>${totalDisp}</strong></div>
+  </div>
+  <div class="dtr-table-wrap">
+    <table class="dtr-table">
+      <thead><tr>
+        <th class="left">Date</th><th>Day</th><th>Time In</th><th>Time Out</th><th>Total Hours</th><th class="left">Remarks</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+      ${showTot?`<tfoot><tr><td colspan="2">Total</td><td></td><td></td><td>${totalDisp}</td><td>${recCount} days w/ punch</td></tr></tfoot>`:''}
+    </table>
+  </div>
+  <div class="dtr-sigs">
+    <div class="dtr-sig"><div style="height:34px"></div><div class="dtr-sig-line"></div><div class="dtr-sig-label">Employee Signature</div><div class="dtr-sig-sub">${emp?.full_name||''}</div></div>
+    <div class="dtr-sig"><div style="height:34px"></div><div class="dtr-sig-line"></div><div class="dtr-sig-label">Approved By</div>${approver?`<div class="dtr-sig-sub">${approver}</div>`:''}</div>
+  </div>
+  ${bionote?'<div class="dtr-footnote">The details of this DTR were extracted from the biometric device and converted to this document.</div>':''}
+</div>`;
+}
+
+async function openPDFWindow(keys) {
+  if (!keys.length||!keys[0]){showToast('Select an employee first');return;}
+  showToast('Preparing PDF...');
+
+  const logoMap = {};
+  for (const k of keys.filter(k=>k)) {
+    const emp = employees.find(e=>e.device_id===k);
+    const co  = companies.find(c=>c.name===emp?.company);
+    const src = co?.logo_file||'';
+    if (src && !logoMap[src]) {
+      logoMap[src] = await getLogoBase64(src);
+    }
+  }
+
+  const content = keys.filter(k=>k).map((k,i) => {
+    const emp    = employees.find(e=>e.device_id===k);
+    const co     = companies.find(c=>c.name===emp?.company);
+    const logoB64= logoMap[co?.logo_file||'']||'';
+    const pageBreak = i < keys.length-1 ? 'page-break-after:always' : '';
+    return `<div style="${pageBreak}">${buildDTRPrint(k, logoB64)}</div>`;
+  }).join('');
+
+  const styles=`
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Calibri,Arial,sans-serif;background:#fff}
+    .dtr-doc{font-size:12px;color:#000;font-weight:700;width:100%;max-width:920px;margin:0 auto;padding:20px 24px;position:relative}
+    .dtr-watermark{
+  position:absolute;
+  top:0;left:0;right:0;bottom:0;
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:none;z-index:0;
+}
+    .dtr-watermark img{width:100%;height:100%;object-fit:contain;opacity:0.0}
+    .dtr-emp-bar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:10px;padding:7px 10px;background:linear-gradient(90deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe;border-radius:5px;font-size:12px;position:relative;z-index:1}
+    .dtr-emp-bar span{color:#555}.dtr-emp-bar strong{color:#1e3a8a}
+    .dtr-table-wrap{border:1.5px solid #93c5fd;border-radius:5px;overflow:hidden;margin-bottom:14px;position:relative;z-index:1}
+    .dtr-table{width:100%;border-collapse:collapse;font-size:9.5px}
+    .dtr-table thead th{background:#1e40af;color:#fff;padding:6px 8px;font-weight:700;text-transform:uppercase;font-size:8.5px;border-right:1px solid rgba(255,255,255,.2);text-align:center}
+    .dtr-table thead th.left{text-align:left}.dtr-table thead th:last-child{border-right:none}
+    .dtr-table tbody td{padding:4px 7px;border-bottom:1px solid #dbeafe;border-right:1px solid #e0eaff;text-align:center;color:#1e293b}
+    .dtr-table tbody td.left{text-align:left}
+    .dtr-table tbody tr:nth-child(odd) td{background:rgba(245,249,255,0.85)}
+    .dtr-table tbody tr:last-child td{border-bottom:none}
+    .dtr-table tfoot td{background:#1e3a8a;color:#fff;font-weight:700;padding:5px 8px;text-align:center;font-size:8.5px;text-transform:uppercase}
+    .dtr-sigs{display:flex;justify-content:space-between;margin-top:22px;flex-wrap:wrap;gap:14px;position:relative;z-index:1}
+    .dtr-sig{text-align:center;min-width:155px}
+    .dtr-sig-line{border-top:1.5px solid #1e40af;margin-bottom:4px;padding-top:4px}
+    .dtr-sig-label{font-size:8.5px;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:.06em}
+    .dtr-sig-sub{font-size:8px;color:#888;margin-top:1px}
+    .dtr-footnote{text-align:center;font-size:7.5px;color:#888;margin-top:10px;border-top:1px solid #e0eaff;padding-top:5px;font-style:italic;position:relative;z-index:1}
+    .toolbar{position:sticky;top:0;z-index:99;background:#f0f4ff;padding:11px 18px;border-bottom:1px solid #bfdbfe;display:flex;align-items:center;gap:10px}
+    .toolbar button{padding:8px 18px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:none}
+    .btn-print{background:#1d4ed8;color:#fff}.btn-close{background:#fff;color:#1d4ed8;border:1px solid #bfdbfe!important}
+    .hint{font-size:11px;color:#64748b;margin-left:4px}
+    @media print{
+      .toolbar{display:none!important}
+      @page{margin:10mm}
+      body{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+      .dtr-watermark img{opacity:0!important}
+    }
+  `;
+
+  const empNames=keys.filter(k=>k).map(k=>{const e=employees.find(x=>x.device_id===k);return e?e.full_name:'Device #'+k;}).join(', ');
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>DTR – ${empNames}</title><style>${styles}</style></head><body>
+    <div class="toolbar">
+      <button class="btn-print" onclick="window.print()">🖨 Print / Save as PDF</button>
+      <button class="btn-close" onclick="window.close()">✕ Close</button>
+      <span class="hint">Set Destination to "Save as PDF" in the print dialog</span>
+    </div>${content}</body></html>`;
+
+  const blob=new Blob([html],{type:'text/html'});
+  window.open(URL.createObjectURL(blob),'_blank');
+  showToast('✓ Opened for '+keys.length+' employee'+(keys.length>1?'s':''));
+}
+
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-bg').forEach(bg=>bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open');}));
+
+function dzDrag(e,id){e.preventDefault();document.getElementById(id).classList.add('drag');}
+function dzLeave(id){document.getElementById(id).classList.remove('drag');}
+function dzDrop(e,id,fi){
+  e.preventDefault();document.getElementById(id).classList.remove('drag');
+  const f=e.dataTransfer.files[0];
+  if(f){const dt=new DataTransfer();dt.items.add(f);document.getElementById(fi).files=dt.files;previewFile(fi,id+'-name');}
+}
+function previewFile(inputId,labelId){
+  const f=document.getElementById(inputId).files[0];
+  if(f)document.getElementById(labelId).textContent='📄 '+f.name+' ('+(f.size/1024).toFixed(1)+' KB)';
+}
+
+function formatDate(d){if(!d||d==='—')return'—';try{return new Date(d+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'2-digit',year:'numeric'});}catch(e){return d;}}
+function getDayName(d){if(!d)return'—';try{return new Date(d+'T00:00:00').toLocaleDateString('en-US',{weekday:'short'});}catch(e){return'—';}}
+function fmtTime(t){
+  if(!t) return '—';
+  return t.substring(0,5); 
+}
+function initials(name){if(!name)return'??';const p=name.replace(/,/g,' ').trim().split(/\s+/).filter(Boolean);return p.length===1?p[0].slice(0,2).toUpperCase():(p[0][0]+(p[1]?.[0]||'')).toUpperCase();}
+function updateTopBadge(){const b=document.getElementById('top-badge'),txt=document.getElementById('top-badge-txt');if(employees.length||attendance.length){b.style.display='';txt.textContent=employees.length+' employees · '+attendance.length+' records';}}
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast'+(type?' toast-'+type:'');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>
